@@ -1,11 +1,15 @@
 #define F_CPU 16000000UL
-#include <avr/io.h>
 #include <util/delay.h>
-#include <stdlib.h>
+#include <avr/io.h>
+#include <stdint.h>
+#include <stdio.h>
+#include <avr/interrupt.h>
+#include "UART/UART.h"
 
-// Define el valor máximo para el contador (8 bits)
-#define MAX_VALUE 255
+int received_value = 0;
+char input_buffer[4]; // Buffer para almacenar la cadena recibida
 
+// Configura los pines
 void GPIO_init(void) {
 	// Configura PC4 y PC5 como salidas
 	DDRC |= (1 << DDC4) | (1 << DDC5);
@@ -18,6 +22,7 @@ void GPIO_init(void) {
 	PORTD &= ~((1 << PORTD2) | (1 << PORTD3) | (1 << PORTD4) | (1 << PORTD5) | (1 << PORTD6) | (1 << PORTD7));
 }
 
+// Actualiza los LEDs según el valor recibido
 void refreshPort(uint8_t value) {
 	// Actualiza cada bit en PORTD y PORTC según el valor recibido
 	if (value & 0b00000001) {  // Bit 0
@@ -68,20 +73,50 @@ void refreshPort(uint8_t value) {
 		PORTD &= ~(1 << PORTD7);
 	}
 }
-
 int main(void) {
-	uint8_t test_values[] = {0, 1, 3, 7, 15, 31, 63, 127, 255};
-	uint8_t i;
-
-	// Inicializa GPIO
+	// Inicializa GPIO y UART
 	GPIO_init();
+	UART_init(9600); // Inicializa UART con baud rate de 9600
+	sei(); // Habilita las interrupciones globales
 
-	// Prueba diferentes valores para verificar el funcionamiento de los LEDs
+	// Mensaje inicial para el usuario
+	UART_send_string("Por favor, ingresa un número (0-255): ");
+
 	while (1) {
-		for (i = 0; i < sizeof(test_values) / sizeof(test_values[0]); i++) {
-			refreshPort(test_values[i]);
-			_delay_ms(1000); // Espera 1 segundo para ver el resultado
+		// Lee una cadena de caracteres desde UART
+		UART_receive_string(input_buffer, sizeof(input_buffer));
+
+		// Envía un salto de línea antes de imprimir el mensaje recibido
+		UART_send('\n');
+		UART_send('\r'); // Retorno de carro para asegurar la posición del cursor al inicio de la línea
+
+		UART_send_string("Cadena recibida: ");
+		UART_send_string(input_buffer);
+		UART_send('\n');
+		// Convierte la cadena a un número entero
+		received_value = atoi(input_buffer);
+		// Envía un salto de línea antes de imprimir el mensaje recibido
+		UART_send('\n');
+		UART_send('\r'); // Retorno de carro para asegurar la posición del cursor al inicio de la línea
+		// Envía un salto de línea antes de imprimir el valor entero
+		UART_send_string("Valor recibido como entero: ");
+		UART_send_number(received_value);
+		// Envía un salto de línea antes de imprimir el mensaje recibido
+		UART_send('\n');
+		UART_send('\r'); // Retorno de carro para asegurar la posición del cursor al inicio de la línea
+
+
+		// Verifica si el número está en el rango permitido
+		if (received_value >= 0 && received_value <= 255) {
+			// Actualiza los LEDs según el valor recibido
+			refreshPort(received_value);
+			} else {
+			// Maneja valores fuera del rango permitido
+			UART_send_string("Valor no válido. Por favor, ingresa un número entre 0 y 255.\n");
 		}
+
+		// Solicita al usuario que ingrese otro número
+		UART_send_string("\nPor favor, ingresa un número (0-255): ");
 	}
 
 	return 0;

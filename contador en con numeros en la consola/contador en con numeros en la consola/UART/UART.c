@@ -50,8 +50,32 @@ unsigned char UART_receive(void) {
 	}
 }
 
+/* Lee una cadena del buffer UART hasta que se encuentra un delimitador. */
+void UART_receive_string(char* buffer, uint8_t max_length) {
+	uint8_t index = 0;
+	char received_char;
+
+	while (index < (max_length - 1)) { // Deja espacio para el terminador de cadena
+		if (UART_available()) {
+			received_char = UART_receive();
+			if (received_char == '\n' || received_char == '\r') {
+				// Fin de la cadena
+				break;
+			}
+			buffer[index++] = received_char;
+		}
+	}
+	buffer[index] = '\0'; // Null-terminar el string
+}
+
 /* Verifica si hay datos disponibles en el buffer UART. */
 int UART_available(void) {
 	return (uart_head != uart_tail); // Retorna 1 si hay datos en el buffer, 0 si no
 }
 
+// Rutina de interrupción del UART
+ISR(USART_RX_vect) {
+	uart_buffer[uart_head] = UDR0; // Leer el carácter recibido del registro UDR0
+	uart_head = (uart_head + 1) % sizeof(uart_buffer); // Actualizar el índice de la cabeza del buffer
+	uart_buffer[uart_head] = '\0'; // Terminador de cadena
+}
