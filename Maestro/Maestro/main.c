@@ -30,10 +30,10 @@ void enviarValoresUART() {
 	valorSpi2b = (int)(valorSpi2);
 	valorSpi1b = (int)(valorSpi1);
 	UART_send_string("\n");
-	snprintf(buffer, sizeof(buffer), "V1: %d \r\n", valorSpi1b);
+	snprintf(buffer, sizeof(buffer), "P1: %d \r\n", valorSpi1b);
 	UART_send_string(buffer);
 	_delay_ms(1);
-	snprintf(buffer, sizeof(buffer), "V2: %d \r\n", valorSpi2b);
+	snprintf(buffer, sizeof(buffer), "P2: %d \r\n", valorSpi2b);
 	UART_send_string(buffer);
 }
 

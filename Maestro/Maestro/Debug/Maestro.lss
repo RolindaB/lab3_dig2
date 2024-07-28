@@ -162,7 +162,7 @@ void enviarValoresUART() {
  104:	89 e0       	ldi	r24, 0x09	; 9
  106:	91 e0       	ldi	r25, 0x01	; 1
  108:	0e 94 ef 01 	call	0x3de	; 0x3de <UART_send_string>
-	snprintf(buffer, sizeof(buffer), "V1: %d \r\n", valorSpi1b);
+	snprintf(buffer, sizeof(buffer), "P1: %d \r\n", valorSpi1b);
  10c:	80 91 23 02 	lds	r24, 0x0223	; 0x800223 <valorSpi1b+0x1>
  110:	8f 93       	push	r24
  112:	80 91 22 02 	lds	r24, 0x0222	; 0x800222 <valorSpi1b>
@@ -195,7 +195,7 @@ void enviarValoresUART() {
  140:	00 c0       	rjmp	.+0      	; 0x142 <enviarValoresUART+0x60>
  142:	00 00       	nop
 	_delay_ms(1);
-	snprintf(buffer, sizeof(buffer), "V2: %d \r\n", valorSpi2b);
+	snprintf(buffer, sizeof(buffer), "P2: %d \r\n", valorSpi2b);
  144:	80 91 21 02 	lds	r24, 0x0221	; 0x800221 <valorSpi2b+0x1>
  148:	8f 93       	push	r24
  14a:	80 91 20 02 	lds	r24, 0x0220	; 0x800220 <valorSpi2b>
